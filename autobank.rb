@@ -74,15 +74,16 @@ else
 	puts "What is your password?"
 	form.auth_passwd = gets
 end
-site = agent.submit(form)
+agent.submit(form)
 puts "Going to Account Page"
 ############
 # Error here: asking for verification
 ############
-site = site.link_with(:text => /CHASE CHECKING/i).click
+#site = site.link_with(:text => /CHASE CHECKING/i).click
+agent.click(/CHASE CHECKING/)
 #Now we begin the parsing of the actual account information page
 #First we obtain the page text
-page = Nokogiri::HTML(site.body)
+page = Nokogiri::HTML(agent.page.body)
 
 # The relevant data is in <td> tags, where the first is garbage, and only the
 # 2nd, 4th, and 6th entries contain relevant data
