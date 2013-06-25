@@ -119,7 +119,6 @@ end
 puts "Writing transactions to #{Ledgerfile}"
 file = File::open(Ledgerfile, "a")
 
-transactions.reverse
 transactions.each do |trans|
 		file.puts trans
 end
