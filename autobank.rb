@@ -1,43 +1,8 @@
-#!/usr/bin/env ruby
-#The purpose of this program is to automatically generate ledger entries from
-#the Chase mobile website.
-
 require 'rubygems'
 require 'mechanize'
 require 'yaml'
+require './transaction'
 
-class Transaction
-  attr_accessor :payee, :amount
-
-  def initialize(date, payee, amount)
-    if date == "Pending"
-      @date = date
-    else
-      @date = Date.strptime(date, '%m/%d/%Y')
-    end
-    @payee = payee
-    @amount = amount
-  end
-
-  def date
-    if @date == "Pending"
-      @date
-    else
-      @date.strftime("%Y/%m/%d")
-    end
-  end
-
-  def first_line
-    "#{date}\t#{payee}"
-  end
-
-  def to_s
-    "\n" +
-    first_line + "\n" +
-    "\tExpenses:Misc\n" +
-    "\tAssets:Checking:Chase\t\t\t#{amount}\n"
-  end
-end
                 
 #Below is the file that ledger will read, along with the file containing the 
 #username and password for login to the Chase website. If these files don't
