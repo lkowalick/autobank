@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'mechanize'
 require 'yaml'
-require './transaction'
+require 'autobank'
 
                 
 #Below is the file that ledger will read, along with the file containing the 
@@ -59,7 +59,7 @@ raw_transactions.delete_at(-1)
 
 transactions = []
 raw_transactions.each_slice(8) do |s| 
-  new_trans = Transaction.new(s[3], s[1], s[5])
+  new_trans = Autobank::Transaction.new(s[3], s[1], s[5])
   transactions << new_trans
 end
 
