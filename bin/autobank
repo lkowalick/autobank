@@ -48,30 +48,27 @@ form.auth_userId = username
 form.auth_passwd = password
 agent.submit(form)
 page = Nokogiri::HTML(agent.page.body)
+# We must verify the mechanize browser
 if page.css("a").any? { |elt| elt.text =~ /Identification\ Code/ }
+  agent.page.forms.first.submit
   agent.click(/.+\@.+/)
   puts "** A one-time verification is needed **"
   puts "A one time passcode was sent to your email"
-  puts "Please enter the code"
+  print "Please enter the code: "
   otp = gets
   form = agent.page.forms.first
   form.auth_passwd = password
   form.auth_otp = otp
   form.submit
 end
+
 puts "Going to Account Page"
-############
-# Error here: asking for verification
-############
-#site = site.link_with(:text => /CHASE CHECKING/i).click
 agent.click(/CHASE CHECKING/)
-#Now we begin the parsing of the actual account information page
-#First we obtain the page text
+
 page = Nokogiri::HTML(agent.page.body)
 
 # The relevant data is in <td> tags, where the first is garbage, and only the
 # 2nd, 4th, and 6th entries contain relevant data
-
 raw_transactions = page.css("td").map(&:text)
 
 raw_transactions.delete_at(-1)
