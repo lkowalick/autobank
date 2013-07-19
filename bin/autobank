@@ -4,6 +4,7 @@ require 'rubygems'
 require 'mechanize'
 require 'yaml'
 require 'autobank'
+require 'pry'
 
                 
 #Below is the file that ledger will read, along with the file containing the 
@@ -27,21 +28,37 @@ end
 ###########################################################
 
 agent = Mechanize.new
-agent.user_agent_alias = 'Linux Mozilla'
+agent.user_agent_alias = 'Mac Safari'
 #Get the Chase mobile sign in page, enter my username, password, and submit the form
 
 agent.get('https://mobilebanking.chase.com/Public/Home/LogOnJp')
-form = agent.page.forms[0]
+
 if has_bank_info
-  form.auth_userId = chase_info["username"]
-  form.auth_passwd = chase_info["password"]
+  username = chase_info["username"]
+  password = chase_info["password"]
 else
   puts "What is your username?"
-  form.auth_userId = gets
+  username = gets
   puts "What is your password?"
-  form.auth_passwd = gets
+  password = gets
 end
+
+form = agent.page.forms[0]
+form.auth_userId = username
+form.auth_passwd = password
 agent.submit(form)
+page = Nokogiri::HTML(agent.page.body)
+if page.css("a").any? { |elt| elt.text =~ /Identification\ Code/ }
+  agent.click(/.+\@.+/)
+  puts "** A one-time verification is needed **"
+  puts "A one time passcode was sent to your email"
+  puts "Please enter the code"
+  otp = gets
+  form = agent.page.forms.first
+  form.auth_passwd = password
+  form.auth_otp = otp
+  form.submit
+end
 puts "Going to Account Page"
 ############
 # Error here: asking for verification
