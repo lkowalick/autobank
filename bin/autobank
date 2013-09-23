@@ -5,7 +5,6 @@ require 'mechanize'
 require 'yaml'
 require 'autobank'
 require 'pry'
-
                 
 #Below is the file that ledger will read, along with the file containing the 
 #username and password for login to the Chase website. If these files don't
@@ -101,5 +100,5 @@ puts "Writing transactions to #{Ledgerfile}"
 file = File::open(Ledgerfile, "a")
 
 transactions.each do |trans|
-    file.puts trans
+  file.puts trans
 end
