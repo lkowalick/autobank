@@ -1,1 +1,6 @@
-Multi-page additions
+* Multi-page additions
+* Support for mulitple websites
+* Refactor strategy
+  * Base "navigate to page" and "parse" classes
+  * Specific websites have subclasses of the above class for specific functonality
+  * Testability is extremely important.
