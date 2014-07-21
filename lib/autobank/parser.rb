@@ -1,6 +1,6 @@
 module Autobank
   module Parser
-    def parse(page)
+    def self.parse(page)
       raw_transactions = page.css("td").map(&:text)
 
       raw_transactions.delete_at(-1)
