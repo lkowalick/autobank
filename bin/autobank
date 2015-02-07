@@ -77,7 +77,7 @@ end
 #
 file_text = File.read(Ledgerfile)
 transactions.keep_if do |trans|
-  file_text.index(trans.date + "\t" + trans.payee).nil?
+  file_text.gsub(/\s/, '').index((trans.date+trans.payee).gsub(/\s/,'')).nil?
 end
 
 if transactions.empty?
