@@ -1,0 +1,3 @@
+Type,Post Date,Description,Amount,Check or Slip #
+CREDIT,01/31/2000,"Transaction Description 1",1234.56,
+DEBIT,02/28/2000,"Transaction Description 2",-10.00,

@@ -5,89 +5,91 @@ require 'mechanize'
 require 'yaml'
 require 'autobank'
 
-#Below is the file that ledger will read, along with the file containing the
-#username and password for login to the Chase website. If these files don't
-#exist, the programs exits and reports an error
-unless File.file?(ENV['LEDGER_FILE'])
-  puts "Need environment variable $LEDGER_FILE to be an actual file"
-  exit 1
-else
-  Ledgerfile = ENV['LEDGER_FILE']
+class Exec
+  def self.ute
+    unless File.file?(ENV['LEDGER_FILE'])
+      puts "Need environment variable $LEDGER_FILE to be an actual file"
+      exit 1
+    end
+
+    if ARGV.size == 0
+
+      has_bank_info = File.file?(ENV['BANK_INFO'])
+      if has_bank_info
+        chase_info = YAML::load(File.open(ENV['BANK_INFO']))["chase"]
+      end
+
+      agent = Mechanize.new
+      agent.user_agent_alias = 'Mac Safari'
+      #Get the Chase mobile sign in page, enter my username, password, and submit the form
+
+      agent.get('https://mobilebanking.chase.com/Public/Home/LogOnJp')
+
+      if has_bank_info
+        username = chase_info["username"]
+        password = chase_info["password"]
+      else
+        puts "What is your username?"
+        username = gets
+        puts "What is your password?"
+        password = gets
+      end
+
+      form = agent.page.forms[0]
+      form.auth_userId = username
+      form.auth_passwd = password
+      agent.submit(form)
+      page = Nokogiri::HTML(agent.page.body)
+      # We must verify the mechanize browser
+      if page.css("a").any? { |elt| elt.text =~ /Identification\ Code/ }
+        agent.page.forms.first.submit
+        agent.click(/.+\@.+/)
+        puts "** A one-time verification is needed **"
+        puts "A one time passcode was sent to your email"
+        print "Please enter the code: "
+        otp = gets
+        form = agent.page.forms.first
+        form.auth_passwd = password
+        form.auth_otp = otp
+        form.submit
+      end
+
+      puts "Going to Account Page"
+      agent.click(/CHASE CHECKING/)
+
+      page = Nokogiri::HTML(agent.page.body)
+
+      transactions = Autobank::Parser.parse(page)
+      2.times do
+        agent.click(/Next/)
+        transactions += Autobank::Parser.parse(Nokogiri::HTML(agent.page.body))
+      end
+    elsif ARGV.size == 1
+      transactions = Autobank::Parser.from_csv(ARGV[0])
+    else
+      raise 'Can only accept 0 or 1 command line arguments'
+    end
+
+    #For each transaction taken from the webpage, we check to see if it is in
+    #the ledger file. We discard it if it already in the ledger file.
+    #
+    file_text = File.read(ENV['LEDGER_FILE'])
+    transactions.keep_if do |trans|
+      file_text.gsub(/\s/, '').index((trans.date+trans.payee).gsub(/\s/,'')).nil?
+    end
+
+    if transactions.empty?
+      puts "No transactions updated"
+      exit 0
+    end
+
+    puts "Writing transactions to #{ENV['LEDGER_FILE']}"
+    file = File::open(ENV['LEDGER_FILE'], "a")
+
+    transactions.reverse.each do |trans|
+      file.puts trans
+    end
+  end
 end
 
-has_bank_info = File.file?(ENV['BANK_INFO'])
-if has_bank_info
-  BankInfo = ENV['BANK_INFO'] if has_bank_info
-  chase_info = YAML::load( File.open(BankInfo))["chase"]
-end
-
-###########################################################
-# Navigate to Chase Account Information Page
-###########################################################
-
-agent = Mechanize.new
-agent.user_agent_alias = 'Mac Safari'
-#Get the Chase mobile sign in page, enter my username, password, and submit the form
-
-agent.get('https://mobilebanking.chase.com/Public/Home/LogOnJp')
-
-if has_bank_info
-  username = chase_info["username"]
-  password = chase_info["password"]
-else
-  puts "What is your username?"
-  username = gets
-  puts "What is your password?"
-  password = gets
-end
-
-form = agent.page.forms[0]
-form.auth_userId = username
-form.auth_passwd = password
-agent.submit(form)
-page = Nokogiri::HTML(agent.page.body)
-# We must verify the mechanize browser
-if page.css("a").any? { |elt| elt.text =~ /Identification\ Code/ }
-  agent.page.forms.first.submit
-  agent.click(/.+\@.+/)
-  puts "** A one-time verification is needed **"
-  puts "A one time passcode was sent to your email"
-  print "Please enter the code: "
-  otp = gets
-  form = agent.page.forms.first
-  form.auth_passwd = password
-  form.auth_otp = otp
-  form.submit
-end
-
-puts "Going to Account Page"
-agent.click(/CHASE CHECKING/)
-
-page = Nokogiri::HTML(agent.page.body)
-
-transactions = Autobank::Parser.parse(page)
-2.times do
-  agent.click(/Next/)
-  transactions += Autobank::Parser.parse(Nokogiri::HTML(agent.page.body))
-end
-
-
-#For each transaction taken from the webpage, we check to see if it is in
-#the ledger file. We discard it if it already in the ledger file.
-#
-file_text = File.read(Ledgerfile)
-transactions.keep_if do |trans|
-  file_text.gsub(/\s/, '').index((trans.date+trans.payee).gsub(/\s/,'')).nil?
-end
-
-if transactions.empty?
-  puts "No transactions updated"
-  exit 0
-end
-
-puts "Writing transactions to #{Ledgerfile}"
-file = File::open(Ledgerfile, "a")
-
-transactions.reverse.each do |trans|
-  file.puts trans
-end
+Exec.ute

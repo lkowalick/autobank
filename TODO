@@ -1,4 +1,3 @@
-* Parse the CSV chase provides instead of scraping the webpage
 * Use hashes of transaction text and date instead of the text and dates
   themselves as identifiers, to allow changing the account descriptions
   and dates
