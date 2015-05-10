@@ -36,7 +36,11 @@ module Autobank
     end
 
     def amount_line
-      "    Assets:Checking:Chase#{amount.rjust(27)}\n"
+      "    Assets:Checking:Chase#{amount_with_dollar_sign.rjust(27)}\n"
+    end
+
+    def amount_with_dollar_sign
+      amount.gsub(/\A(-?)(\d)/, '\1$\2')
     end
   end
 end
