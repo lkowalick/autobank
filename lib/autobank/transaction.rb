@@ -10,7 +10,7 @@ module Autobank
       else
         @date = ::Date.strptime(date, '%m/%d/%Y')
       end
-      @payee = payee
+      @payee = payee.gsub('$', '')
       @amount = amount
     end
 
