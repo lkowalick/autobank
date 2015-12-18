@@ -5,21 +5,13 @@ module Autobank
     attr_accessor :payee, :amount
 
     def initialize(date:, payee:, amount:)
-      if date == "Pending"
-        @date = date
-      else
-        @date = ::Date.strptime(date, '%m/%d/%Y')
-      end
+      @date = ::Date.strptime(date, '%m/%d/%Y')
       @payee = payee
       @amount = amount
     end
 
     def date
-      if @date == "Pending"
-        @date
-      else
-        @date.strftime("%Y/%m/%d")
-      end
+      @date.strftime("%Y/%m/%d")
     end
 
     def to_s
