@@ -2,7 +2,7 @@ require 'autobank/transaction'
 require 'minitest/autorun'
 
 describe Autobank::Transaction do
-  subject { Autobank::Transaction.new(date_string, payee, amount) }
+  subject { Autobank::Transaction.new(date: date_string, payee: payee, amount: amount) }
   let(:date_string) { "Pending" }
   let(:payee) { "Payee" }
   let(:amount) { "$5.00" }

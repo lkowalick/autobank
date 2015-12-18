@@ -4,7 +4,7 @@ module Autobank
   class Transaction
     attr_accessor :payee, :amount
 
-    def initialize(date, payee, amount)
+    def initialize(date:, payee:, amount:)
       if date == "Pending"
         @date = date
       else
