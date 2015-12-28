@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'autobank'
-require 'pry'
 
 transactions = Autobank::Parser.parse(ARGF.read)
 

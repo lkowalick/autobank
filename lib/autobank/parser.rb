@@ -8,7 +8,7 @@ module Autobank
         Autobank::Transaction.new(date: row[:post_date],
                                   payee: row[:description],
                                   amount: amount)
-      end
+      end.sort_by(&:to_s)
     end
   end
 end
